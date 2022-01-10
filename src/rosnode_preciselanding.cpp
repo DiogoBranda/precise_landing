@@ -94,7 +94,7 @@ int main(int argc, char **argv){
   /*###########################
     ##     Ros Publisher     ##
     ###########################*/
-
+ros::Publisher land_vel_pub = n.advertise<geometry_msgs::TwistStamped>("mavros/setpoint_velocity/cmd_vel",10);
   //ros::Publisher ArucoPose_pub = n.advertise<geometry_msgs::PoseStamped>("ArucoPose", 10);
   //ros::Publisher ArucoDetect_pub = n.advertise<std_msgs::Bool>("VisualDetect", 10);
 //  std::cout<<" Ros Publisher done" ;
@@ -157,7 +157,16 @@ int main(int argc, char **argv){
     z /=count;
 
     std::cout << " fim x =" <<x<< " y =" <<y<< " z = " <<z<<"\n";
+    float vx =0, vy=0, vz =0;
+    myUav->p(x,y,(-1)*z,&vx,&vy,&vz,1/10);
+    std::cout << " vel x =" <<vx<< " y =" <<vy<< " z = " <<vz<<"\n";
 
+    geometry_msgs::TwistStamped vel;
+    vel.header.stamp = ros::Time::now();
+    vel.twist.linear.x = vx;
+    vel.twist.linear.y = vy;
+    vel.twist.linear.z = vz;
+land_vel_pub.publish(vel);
     termalCamera->clearImageReady();
     visualCamera->clearImageReady();
     lidarOs->clearReady();
