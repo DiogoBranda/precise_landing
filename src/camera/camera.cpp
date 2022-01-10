@@ -80,3 +80,12 @@ cv_bridge::CvImagePtr camera::getImage(){
 char camera::getImageReady(){
   return this->imageReady;
 }
+char camera::getConfigReady(){
+  return this->config;
+}
+/**
+ * @brief clearImageReady - Set imageReady variable to 0.
+ */
+void camera::clearImageReady(){
+   this->imageReady=0;
+}

@@ -47,16 +47,14 @@
  * @brief main
  */
 int main(int argc, char **argv){
-
+int errx =0,erry =0,errz =0;
   /*##################################
     ##     Ros parameters initi     ##
     ##################################*/
 
   ros::init(argc, argv, "rosnode_preciselanding"); // Node name
   ros::NodeHandle  n; // Node
-  //ros::Rate rate(20.0); // Publication rate
   ros::Rate rate(2.0); // Publication rate
-
   std::cout<<"Precise landing node starting\n" ;
 
   /*#############################
@@ -113,50 +111,81 @@ int main(int argc, char **argv){
 
   bool configDone = false; // if all sensores are ready to transmite data then the drone can procede to land
   while(ros::ok()){
-      double x = 0, y = 0, z = 0;
-      double tcaliby = -0.0306408, tcalibx=-0.235605, tcalibz=-1.52046;
-      double lcalibx = 0.148387, lcaliby =0.119842, lcalibz = -0.22668;
-
-      int count = 0;
+          float pos[6];
+    double caliby = -0.0306408, calibx=-0.235605, calibz=-1.52046;
+    double ty = 0, tx=0, tz=0;
     if(termalCamera->getImageReady()==1  && termalCamera->getConfigReady() ){
       cv::Mat termalImage;
       cv::bitwise_not(termalCamera->getImage()->image,termalImage);
       arucoCras::detector(termalImage,termalAruco,N_TERMAL_ARUCOS,termalCamera->getCameraMatrix(),termalCamera->getDistCoeffs(),"termica");
       arucoCras::arucoTfPosition(termalAruco,N_TERMAL_ARUCOS,listener,termalpose,PLATFORM_LINK);
       std::cout << " Termica x =" <<termalpose->getPose().pose.position.x<< " y =" <<termalpose->getPose().pose.position.y<< " z = " <<termalpose->getPose().pose.position.z<<"\n";
-      x = x + termalpose->getPose().pose.position.x + tcalibx;
-      y = y + termalpose->getPose().pose.position.y + tcaliby;
-      z = z + termalpose->getPose().pose.position.z + tcalibz;
-      count++;
+     // std::cout << " TERMAL CORR x =" <<(termalpose->getPose().pose.position.x + calibx)<< " y =" <<(termalpose->getPose().pose.position.y + caliby)<< " z = " <<(termalpose->getPose().pose.position.z +calibz)<<"\n";
+      tx = (termalpose->getPose().pose.position.x + calibx);
+      ty = (termalpose->getPose().pose.position.y + caliby);
+      tz = (termalpose->getPose().pose.position.z + calibz);
     }
 
     if(visualCamera->getImageReady()==1 && visualCamera->getConfigReady()){
       arucoCras::detector(visualCamera->getImage()->image,visualAruco,N_TERMAL_ARUCOS,visualCamera->getCameraMatrix(),visualCamera->getDistCoeffs(),"VISUAL");
       arucoCras::arucoTfPosition(visualAruco,N_TERMAL_ARUCOS,listener,visualpose,PLATFORM_LINK);
       std::cout << " Visual x =" <<visualpose->getPose().pose.position.x<< " y =" <<visualpose->getPose().pose.position.y<< " z = " <<visualpose->getPose().pose.position.z<<"\n";
-      x = x + visualpose->getPose().pose.position.x ;
-      y = y + visualpose->getPose().pose.position.y ;
-      z = z + visualpose->getPose().pose.position.z ;
-      count++;
+     if(((abs(visualpose->getPose().pose.position.x -tx)>0.02)) && visualpose->getDetect().data && termalpose->getDetect().data) {
+//         std::cout << " erro x =" <<(visualpose->getPose().pose.position.x -tx)<<"\n";
+//         std::cout << " Termica x =" <<termalpose->getPose().pose.position.x<< "\n";
+//         std::cout << " Visual x =" <<visualpose->getPose().pose.position.x<<"\n";
+         errx++;
+//         std::cout << " err count x =" <<errx<<"\n";
+
+     }
+     if(((abs(visualpose->getPose().pose.position.y -ty)>0.02)) && visualpose->getDetect().data && termalpose->getDetect().data){
+//         std::cout << " erro y =" <<(visualpose->getPose().pose.position.y -ty)<<"\n";
+//         std::cout << " Termica y =" <<termalpose->getPose().pose.position.y<< "\n";
+//         std::cout << " Visual y =" <<visualpose->getPose().pose.position.y<<"\n";
+         erry++;
+//         std::cout << " err count y =" <<erry<<"\n";
+     }
+     if(((abs(visualpose->getPose().pose.position.z -tz)>0.02)) && visualpose->getDetect().data && termalpose->getDetect().data){
+//         std::cout << " erro z =" <<(visualpose->getPose().pose.position.z -tz)<<"\n";
+//         std::cout << " Termica z =" <<termalpose->getPose().pose.position.z<< "\n";
+//         std::cout << " Visual z =" <<visualpose->getPose().pose.position.z<<"\n";
+         errz++;
+//         std::cout << " err count z =" <<errz<<"\n";
+     }
 
     }
   if(lidarOs->getReady()){
-    float pos[6];
+      std::vector<cv::Mat> img ;
 
-    int nLidarArucos = lidarOs->calibLidar("intensity",5500,8000,pos);
-    std::cout<<"lidar x = "<<pos[0]<<" y = "<<pos[1]<<" z = "<<pos[2]<<"\n";
 
-    x = x + pos[0] + lcalibx;
-    y = y + pos[2] + lcaliby;
-    z = z - pos[1] + lcalibz;
-    count++;
+      int nLidarArucos = lidarOs->calibLidar("intensity",5500,8000,pos);
+      std::cout<<"lidar x = "<<pos[0]<<" y = "<<pos[1]<<" z = "<<pos[2]<<"\n";
 
+//      std::cout<<"teste_1\n";
+
+//      if (nLidarArucos>0){
+//        std::cout<<"teste_2\n";
+
+//        for (int y=0;y<N_LIDAR_ARUCOS;y++) {
+//          lidarAruco[y]->setArucoPose(0,0,0,0,Eigen::Quaterniond());
+//        }
+//        std::cout<<"teste_3\n";
+
+//        for (int y=0;y<nLidarArucos;y++) {
+//          std::cout<<"teste_4_"<<y<<"\n";
+//          std::cout<<"nlidar "<<nLidarArucos<<"\n";
+//           std::cout<<"img size "<<img[y].size<<"\n";
+//           std::cout<<"img pos "<<pos[y][0]<<"\n";
+//          arucoCras::detectorId(img[y],lidarAruco,N_LIDAR_ARUCOS,pos[y]);
+//          std::cout<<"teste_5_"<<y<<"\n";
+
+//          arucoCras::arucoTfPosition(lidarAruco,N_LIDAR_ARUCOS,listener,lidarpose,PLATFORM_LINK);
+//          std::cout<<"teste_6_"<<y<<"\n";
+
+//        }
+//      }
    }
-    x /=count;
-    y /=count;
-    z /=count;
-
-    std::cout << " fim x =" <<x<< " y =" <<y<< " z = " <<z<<"\n";
+     std::cout << " CALIB x =" <<visualpose->getPose().pose.position.x - pos[0]<< " y =" <<visualpose->getPose().pose.position.y - pos[2]<< " z = " <<visualpose->getPose().pose.position.z + pos[1]<<"\n";
 
     termalCamera->clearImageReady();
     visualCamera->clearImageReady();

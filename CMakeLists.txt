@@ -47,6 +47,11 @@ add_executable(rosnode_preciselanding src/rosnode_preciselanding.cpp
     src/uavControler/uavcontrol.cpp src/camera/camera.cpp
     src/arucoCras/arucoCras.cpp src/sensorPose/sensorpose.cpp
     src/lidar/lidar.cpp)
+
+add_executable(calib src/calib.cpp
+    src/uavControler/uavcontrol.cpp src/camera/camera.cpp
+    src/arucoCras/arucoCras.cpp src/sensorPose/sensorpose.cpp
+    src/lidar/lidar.cpp)
 ##add_executable(uavcontroler src/UAVcontroler/uavcontroler.cpp src/UAVcontroler/uav.cpp)
 ##add_executable(termalDetect src/termaldetect/termalDetect.cpp src/termaldetect/camera.cpp src/termaldetect/myaruco.cpp src/termaldetect/arucopattern.cpp)
 
@@ -65,6 +70,8 @@ add_executable(rosnode_preciselanding src/rosnode_preciselanding.cpp
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(rosnode_preciselanding  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(calib  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
 ##target_link_libraries(rosinterface_uav  ${catkin_LIBRARIES})
 ##target_link_libraries(objectdetecter ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} pcl_visualization)
 ##target_link_libraries(uavcontroler ${catkin_LIBRARIES})

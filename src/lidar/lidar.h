@@ -24,11 +24,12 @@ private:
 bool ready;
 public:
   bool getReady();
-
+  void clearReady();
   CloudType::Ptr cloud;
   lidar();
   void cb_cloud(const CloudType::ConstPtr & cloud_msg);
-  int getBinaryImg(char axis[4],int lowerLimit,int uperLimit, std::vector<cv::Mat> img);
+  int getBinaryImg(const char *axis,int lowerLimit,int uperLimit, std::vector<cv::Mat> &img, float pos[50][6]);
+  int calibLidar(const char *axis,int lowerLimit,int uperLimit,float pos[6]);
 };
 
 #endif // LIDAR_H

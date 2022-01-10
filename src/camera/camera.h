@@ -76,6 +76,17 @@ public:
    * @return char type variable
    */
   char getImageReady();
+
+  /**
+   * @brief clearImageReady - Set imageReady variable to 0.
+   */
+  void clearImageReady();
+
+  /**
+   * @brief getImageReady - If the camera parameters are ready returns 1. If not it returns 0.
+   * @return char type variable
+   */
+  char getConfigReady();
 };
 
 #endif // ROSCAM_H
